@@ -1,12 +1,21 @@
 # Real-Time CPU Scheduler Simulator (FCFS)
 
-This project is a **First-Come, First-Served (FCFS) CPU Scheduler Simulator** built using **Streamlit**. It allows users to simulate real-time process scheduling, visualize execution order, and analyze scheduling performance.
+This project is a Real-Time CPU Scheduler Simulator built using Streamlit. It allows users to simulate First-Come, First-Served (FCFS) and Shortest Job First (SJF - Non-Preemptive) scheduling algorithms, visualize live execution, and analyze scheduling metrics interactively.
 
 ## 🚀 Features
+
+- ✅ **Algorithm Selection**  
+  - Choose between FCFS and SJF (Non-Preemptive).
+  - Simulates scheduling based on selected algorithm logic.
 
 - ✅ **FCFS Scheduling Simulation**  
   - Sorts processes based on arrival time.  
   - Simulates execution in real-time with live updates.  
+  - Computes **Completion Time, Turnaround Time, and Waiting Time**.
+  
+- ✅ **SJF Scheduling (Non-Preemptive)**  
+  - Selects the process with the shortest burst time among arrived processes.  
+  - Dynamically chooses next job based on shortest execution time.
   - Computes **Completion Time, Turnaround Time, and Waiting Time**.  
 
 - ✅ **Live Execution Order**  
@@ -29,3 +38,9 @@ Make sure you have **Python** installed. Then, install the required packages:
 
 ```sh
 pip install streamlit pandas matplotlib
+```
+
+### Step 2: Run the Streamlit App
+
+```sh
+streamlit run app.py
