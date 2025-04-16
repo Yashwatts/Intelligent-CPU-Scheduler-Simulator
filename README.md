@@ -5,7 +5,7 @@ This project is a Real-Time CPU Scheduler Simulator built using Streamlit. It al
 ## 🚀 Features
 
 - ✅ **Algorithm Selection**  
-  - Choose between FCFS and SJF (Non-Preemptive).
+  - Choose between FCFS and SJF (Non-Preemptive),and Round Robin.
   - Simulates scheduling based on selected algorithm logic.
 
 - ✅ **FCFS Scheduling Simulation**  
@@ -16,7 +16,13 @@ This project is a Real-Time CPU Scheduler Simulator built using Streamlit. It al
 - ✅ **SJF Scheduling (Non-Preemptive)**  
   - Selects the process with the shortest burst time among arrived processes.  
   - Dynamically chooses next job based on shortest execution time.
-  - Computes **Completion Time, Turnaround Time, and Waiting Time**.  
+  - Computes **Completion Time, Turnaround Time, and Waiting Time**.
+    
+- ✅ Round Robin Scheduling
+  - Allocates CPU in time slices using a user-defined time quantum.
+  - Manages a dynamic ready queue to ensure fair execution.
+  - Handles process arrival dynamically.
+  - Computes Completion Time, Turnaround Time, and Waiting Time.
 
 - ✅ **Live Execution Order**  
   - Displays which process is currently executing.  
