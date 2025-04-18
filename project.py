@@ -5,12 +5,10 @@ import time
 import seaborn as sns
 import io
 
-# Set Seaborn style for better visuals
 sns.set(style="whitegrid")
 
-# FCFS Scheduling
 def fcfs_real_time(processes):
-    processes.sort(key=lambda x: x[1])  # Sort by arrival time
+    processes.sort(key=lambda x: x[1])
     n = len(processes)
     completion_time = [0] * n
     turnaround_time = [0] * n
@@ -29,7 +27,7 @@ def fcfs_real_time(processes):
         waiting_time[i] = turnaround_time[i] - processes[i][2]
         with st.empty():
             st.write(f"Executing {processes[i][0]}... ⏳")
-            time.sleep(processes[i][2] / 2)  # Reduced sleep for demo
+            time.sleep(processes[i][2] / 2)
             st.write(f"Completed {processes[i][0]} ✅")
         start_time = completion_time[i]
         progress_bar.progress((i + 1) / n)
@@ -38,7 +36,6 @@ def fcfs_real_time(processes):
     avg_turnaround_time = sum(turnaround_time) / n
     return processes, completion_time, turnaround_time, waiting_time, avg_waiting_time, avg_turnaround_time, gantt
 
-# SJF Non-Preemptive Scheduling
 def sjf_non_preemptive(processes):
     n = len(processes)
     completed = [False] * n
@@ -78,7 +75,6 @@ def sjf_non_preemptive(processes):
     avg_turnaround_time = sum(turnaround_time) / n
     return result, completion_time, turnaround_time, waiting_time, avg_waiting_time, avg_turnaround_time, gantt
 
-# SJF Preemptive Scheduling (SRTF with Time Quantum)
 def sjf_preemptive(processes, quantum):
     n = len(processes)
     remaining_bt = [p[2] for p in processes]
@@ -127,7 +123,6 @@ def sjf_preemptive(processes, quantum):
     avg_turnaround_time = sum(turnaround_time) / n
     return processes, completion_time, turnaround_time, waiting_time, avg_waiting_time, avg_turnaround_time, gantt
 
-# Priority Non-Preemptive Scheduling
 def priority_non_preemptive(processes):
     n = len(processes)
     completed = [False] * n
@@ -167,7 +162,6 @@ def priority_non_preemptive(processes):
     avg_turnaround_time = sum(turnaround_time) / n
     return result, completion_time, turnaround_time, waiting_time, avg_waiting_time, avg_turnaround_time, gantt
 
-# Priority Preemptive Scheduling (with Time Quantum)
 def priority_preemptive(processes, quantum):
     n = len(processes)
     remaining_bt = [p[2] for p in processes]
@@ -216,7 +210,6 @@ def priority_preemptive(processes, quantum):
     avg_turnaround_time = sum(turnaround_time) / n
     return processes, completion_time, turnaround_time, waiting_time, avg_waiting_time, avg_turnaround_time, gantt
 
-# Round Robin Scheduling
 def round_robin_real_time(processes, quantum):
     n = len(processes)
     arrival = [p[1] for p in processes]
@@ -282,7 +275,6 @@ def round_robin_real_time(processes, quantum):
     avg_turnaround_time = sum(turnaround_time) / n
     return processes, completion_time, turnaround_time, waiting_time, avg_waiting_time, avg_turnaround_time, gantt
 
-# Multilevel Queue Scheduling
 def multilevel_queue_real_time(processes, quantum):
     n = len(processes)
     foreground = [p for p in processes if p[4] == "Foreground"]
@@ -368,7 +360,6 @@ def multilevel_queue_real_time(processes, quantum):
     avg_turnaround_time = sum(turnaround_time) / n
     return processes, completion_time, turnaround_time, waiting_time, avg_waiting_time, avg_turnaround_time, gantt
 
-# Plot Gantt Chart
 def plot_gantt_chart(gantt, title, algo_choice):
     fig, ax = plt.subplots(figsize=(10, 2))
     unique_pids = list(set([p[0] for p in gantt]))
@@ -392,18 +383,15 @@ def plot_gantt_chart(gantt, title, algo_choice):
     ax.grid(True, which='both', linestyle='--', alpha=0.7)
     return fig
 
-# Streamlit UI
 st.title("Real-Time CPU Scheduler Simulator")
 st.markdown("Simulate various CPU scheduling algorithms with real-time execution and Gantt chart visualization.")
 
-# Algorithm selection
 algo_choice = st.selectbox("Choose Scheduling Algorithm", [
     "FCFS", "SJF (Non-Preemptive)", "SJF (Preemptive)", 
     "Priority (Non-Preemptive)", "Priority (Preemptive)", 
     "Round Robin", "Multilevel Queue"
 ])
 
-# Process input
 n = st.number_input("Number of Processes", min_value=1, max_value=10, step=1)
 processes = []
 
@@ -423,12 +411,10 @@ for i in range(n):
         queue_type = st.selectbox(f"Queue Type", ["Foreground", "Background"], key=f"queue_{i}") if algo_choice == "Multilevel Queue" else "N/A"
     processes.append([pid, arrival_time, burst_time, priority, queue_type])
 
-# Time quantum input
 quantum = None
 if algo_choice in ["SJF (Preemptive)", "Priority (Preemptive)", "Round Robin", "Multilevel Queue"]:
     quantum = st.number_input(f"Time Quantum (for {algo_choice})", min_value=1, step=1, value=2)
 
-# Simulate button
 if st.button("Simulate"):
     if not processes or any(p[2] <= 0 for p in processes):
         st.error("Please provide valid process details (Burst Time > 0).")
@@ -455,13 +441,12 @@ if st.button("Simulate"):
         elif algo_choice == "Round Robin":
             sim_func = round_robin_real_time
             args = (processes, quantum)
-        else:  # Multilevel Queue
+        else:
             sim_func = multilevel_queue_real_time
             args = (processes, quantum)
 
         processes_sorted, ct, tat, wt, avg_wt, avg_tat, gantt = sim_func(*args)
 
-        # Display results
         st.subheader("Scheduling Results")
         df = pd.DataFrame(processes_sorted, columns=["Process ID", "Arrival Time", "Burst Time", "Priority", "Queue Type"])
         df["Completion Time"] = ct
@@ -469,22 +454,19 @@ if st.button("Simulate"):
         df["Waiting Time"] = wt
 
         st.markdown("#### Scheduling Table")
-        st.dataframe(df)  # Removed .style.highlight_max to remove green background
+        st.dataframe(df)
 
         st.markdown(f"**Average Waiting Time:** {avg_wt:.2f} ms")
         st.markdown(f"**Average Turnaround Time:** {avg_tat:.2f} ms")
 
-        # Queue summary for Multilevel Queue
         if algo_choice == "Multilevel Queue":
             fg_count = sum(1 for p in processes if p[4] == "Foreground")
             bg_count = sum(1 for p in processes if p[4] == "Background")
             st.markdown(f"**Queue Summary:** {fg_count} Foreground (RR), {bg_count} Background (FCFS)")
 
-        # Downloadable CSV
         csv = df.to_csv(index=False)
         st.download_button("Download Scheduling Table", csv, "scheduling_table.csv", "text/csv")
 
-        # Gantt Chart
         st.markdown("#### Gantt Chart")
         fig = plot_gantt_chart(gantt, f"{algo_choice} Gantt Chart", algo_choice)
         st.pyplot(fig)
