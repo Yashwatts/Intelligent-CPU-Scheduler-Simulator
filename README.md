@@ -73,3 +73,8 @@ Make sure you have **Python** installed. Then, install the required packages:
 
 ```sh
 pip install streamlit pandas matplotlib seaborn
+```
+### Step 2: Save the code in a file named project.py and run the following command:
+```sh
+streamlit run project.py
+```
