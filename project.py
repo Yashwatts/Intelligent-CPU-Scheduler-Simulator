@@ -275,104 +275,11 @@ def round_robin_real_time(processes, quantum):
     avg_turnaround_time = sum(turnaround_time) / n
     return processes, completion_time, turnaround_time, waiting_time, avg_waiting_time, avg_turnaround_time, gantt
 
-def multilevel_queue_real_time(processes, quantum):
-    n = len(processes)
-    foreground = [p for p in processes if p[4] == "Foreground"]
-    background = [p for p in processes if p[4] == "Background"]
-    
-    completion_time = [0] * n
-    turnaround_time = [0] * n
-    waiting_time = [0] * n
-    start_time = 0
-    gantt = []
-    completed = [False] * n
-    result = []
-    
-    process_map = {p[0]: i for i, p in enumerate(processes)}
-    
-    st.write("### Live Execution Order (Multilevel Queue)")
-    progress_bar = st.progress(0)
-    
-    fg_queue = []
-    fg_arrived = [False] * len(foreground)
-    fg_remaining_bt = [p[2] for p in foreground]
-    fg_idx_map = {p[0]: i for i, p in enumerate(foreground)}
-    
-    bg_sorted = sorted(background, key=lambda x: x[1])
-    
-    while sum(completed) < n:
-        for i, p in enumerate(foreground):
-            if p[1] <= start_time and not fg_arrived[i]:
-                fg_queue.append(i)
-                fg_arrived[i] = True
-        
-        if fg_queue:
-            idx = fg_queue.pop(0)
-            p = foreground[idx]
-            exec_time = min(quantum, fg_remaining_bt[idx])
-            gantt.append((p[0], start_time, exec_time))
-            with st.empty():
-                st.write(f"Executing {p[0]} (Foreground, RR) for {exec_time} unit(s)... ⏳")
-                time.sleep(exec_time / 2)
-                st.write(f"Completed {p[0]} slice ✅")
-            fg_remaining_bt[idx] -= exec_time
-            start_time += exec_time
-            
-            for i, p in enumerate(foreground):
-                if p[1] <= start_time and not fg_arrived[i]:
-                    fg_queue.append(i)
-                    fg_arrived[i] = True
-            
-            if fg_remaining_bt[idx] > 0:
-                fg_queue.append(idx)
-            else:
-                orig_idx = process_map[p[0]]
-                completion_time[orig_idx] = start_time
-                turnaround_time[orig_idx] = completion_time[orig_idx] - p[1]
-                waiting_time[orig_idx] = turnaround_time[orig_idx] - p[2]
-                completed[orig_idx] = True
-                result.append(p)
-                progress_bar.progress(sum(completed) / n)
-        
-        elif bg_sorted:
-            p = bg_sorted[0]
-            if p[1] <= start_time:
-                gantt.append((p[0], start_time, p[2]))
-                with st.empty():
-                    st.write(f"Executing {p[0]} (Background, FCFS)... ⏳")
-                    time.sleep(p[2] / 2)
-                    st.write(f"Completed {p[0]} ✅")
-                orig_idx = process_map[p[0]]
-                completion_time[orig_idx] = start_time + p[2]
-                turnaround_time[orig_idx] = completion_time[orig_idx] - p[1]
-                waiting_time[orig_idx] = turnaround_time[orig_idx] - p[2]
-                completed[orig_idx] = True
-                result.append(p)
-                bg_sorted.pop(0)
-                start_time += p[2]
-                progress_bar.progress(sum(completed) / n)
-            else:
-                start_time += 1
-        else:
-            start_time += 1
-
-    avg_waiting_time = sum(waiting_time) / n
-    avg_turnaround_time = sum(turnaround_time) / n
-    return processes, completion_time, turnaround_time, waiting_time, avg_waiting_time, avg_turnaround_time, gantt
-
 def plot_gantt_chart(gantt, title, algo_choice):
     fig, ax = plt.subplots(figsize=(10, 2))
     unique_pids = list(set([p[0] for p in gantt]))
     colors = sns.color_palette("hls", len(unique_pids))
     color_map = {pid: colors[i] for i, pid in enumerate(unique_pids)}
-    
-    if algo_choice == "Multilevel Queue":
-        color_map = {}
-        for pid, _, _ in gantt:
-            if pid in [p[0] for p in processes if p[4] == "Foreground"]:
-                color_map[pid] = sns.color_palette("hls", 2)[0]
-            else:
-                color_map[pid] = sns.color_palette("hls", 2)[1]
     
     for i, (pid, start, duration) in enumerate(gantt):
         ax.barh(0, duration, left=start, color=color_map[pid], edgecolor='black')
@@ -389,7 +296,7 @@ st.markdown("Simulate various CPU scheduling algorithms with real-time execution
 algo_choice = st.selectbox("Choose Scheduling Algorithm", [
     "FCFS", "SJF (Non-Preemptive)", "SJF (Preemptive)", 
     "Priority (Non-Preemptive)", "Priority (Preemptive)", 
-    "Round Robin", "Multilevel Queue"
+    "Round Robin"
 ])
 
 n = st.number_input("Number of Processes", min_value=1, max_value=10, step=1)
@@ -398,7 +305,7 @@ processes = []
 st.subheader("Enter Process Details")
 for i in range(n):
     st.markdown(f"**Process {i+1}**")
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         pid = st.text_input(f"Process ID", f"P{i+1}", key=f"pid_{i}")
     with col2:
@@ -407,21 +314,17 @@ for i in range(n):
         burst_time = st.number_input(f"Burst Time", min_value=1, step=1, key=f"burst_{i}")
     with col4:
         priority = st.number_input(f"Priority", min_value=1, step=1, key=f"priority_{i}") if algo_choice.startswith("Priority") else 1
-    with col5:
-        queue_type = st.selectbox(f"Queue Type", ["Foreground", "Background"], key=f"queue_{i}") if algo_choice == "Multilevel Queue" else "N/A"
-    processes.append([pid, arrival_time, burst_time, priority, queue_type])
+    processes.append([pid, arrival_time, burst_time, priority])
 
 quantum = None
-if algo_choice in ["SJF (Preemptive)", "Priority (Preemptive)", "Round Robin", "Multilevel Queue"]:
+if algo_choice in ["SJF (Preemptive)", "Priority (Preemptive)", "Round Robin"]:
     quantum = st.number_input(f"Time Quantum (for {algo_choice})", min_value=1, step=1, value=2)
 
 if st.button("Simulate"):
     if not processes or any(p[2] <= 0 for p in processes):
         st.error("Please provide valid process details (Burst Time > 0).")
-    elif algo_choice in ["SJF (Preemptive)", "Priority (Preemptive)", "Round Robin", "Multilevel Queue"] and quantum is None:
+    elif algo_choice in ["SJF (Preemptive)", "Priority (Preemptive)", "Round Robin"] and quantum is None:
         st.error(f"Please specify a time quantum for {algo_choice}.")
-    elif algo_choice == "Multilevel Queue" and not any(p[4] in ["Foreground", "Background"] for p in processes):
-        st.error("Please assign valid queue types (Foreground or Background).")
     else:
         if algo_choice == "FCFS":
             sim_func = fcfs_real_time
@@ -438,17 +341,14 @@ if st.button("Simulate"):
         elif algo_choice == "Priority (Preemptive)":
             sim_func = priority_preemptive
             args = (processes, quantum)
-        elif algo_choice == "Round Robin":
+        else:  # Round Robin
             sim_func = round_robin_real_time
-            args = (processes, quantum)
-        else:
-            sim_func = multilevel_queue_real_time
             args = (processes, quantum)
 
         processes_sorted, ct, tat, wt, avg_wt, avg_tat, gantt = sim_func(*args)
 
         st.subheader("Scheduling Results")
-        df = pd.DataFrame(processes_sorted, columns=["Process ID", "Arrival Time", "Burst Time", "Priority", "Queue Type"])
+        df = pd.DataFrame(processes_sorted, columns=["Process ID", "Arrival Time", "Burst Time", "Priority"])
         df["Completion Time"] = ct
         df["Turnaround Time"] = tat
         df["Waiting Time"] = wt
@@ -458,11 +358,6 @@ if st.button("Simulate"):
 
         st.markdown(f"**Average Waiting Time:** {avg_wt:.2f} ms")
         st.markdown(f"**Average Turnaround Time:** {avg_tat:.2f} ms")
-
-        if algo_choice == "Multilevel Queue":
-            fg_count = sum(1 for p in processes if p[4] == "Foreground")
-            bg_count = sum(1 for p in processes if p[4] == "Background")
-            st.markdown(f"**Queue Summary:** {fg_count} Foreground (RR), {bg_count} Background (FCFS)")
 
         csv = df.to_csv(index=False)
         st.download_button("Download Scheduling Table", csv, "scheduling_table.csv", "text/csv")
