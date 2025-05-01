@@ -12,7 +12,6 @@ This project is a Real-Time CPU Scheduler Simulator built using **Streamlit**. I
     - Priority (Non-Preemptive)  
     - Priority (Preemptive)  
     - Round Robin  
-    - Multilevel Queue (Foreground with Round Robin, Background with FCFS)  
   - Simulates scheduling based on the selected algorithm's logic.
 
 - ✅ **FCFS Scheduling Simulation**  
@@ -44,12 +43,6 @@ This project is a Real-Time CPU Scheduler Simulator built using **Streamlit**. I
   - Allocates CPU in time slices using a user-defined time quantum.  
   - Manages a dynamic ready queue to ensure fair execution.  
   - Handles process arrivals dynamically.  
-  - Computes **Completion Time**, **Turnaround Time**, and **Waiting Time**.
-
-- ✅ **Multilevel Queue Scheduling**  
-  - Divides processes into Foreground (Round Robin) and Background (FCFS) queues.  
-  - Prioritizes Foreground processes with a user-defined time quantum.  
-  - Executes Background processes in FCFS order when no Foreground processes are ready.  
   - Computes **Completion Time**, **Turnaround Time**, and **Waiting Time**.
 
 - ✅ **Live Execution Order**  
